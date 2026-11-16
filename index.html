@@ -153,7 +153,7 @@ function buildCard(ch) {
   bLoad.type = 'button';
   acts.appendChild(bLoad);
 
-  var a = el('a', 'btn', 'Abrir &#8599;');
+  var a = el('a', 'btn', 'PULSAR AQUI;');
   a.href = ch.url; a.target = '_blank'; a.rel = 'noopener';
   acts.appendChild(a);
 
@@ -167,12 +167,12 @@ function buildCard(ch) {
       if (c.isLoaded()) return;
       mountIframe(player, { src: ch.url, title: names, referrerPolicy: 'no-referrer' });
       note.textContent = 'Iframe montado. Si aparece en blanco, el sitio bloquea el incrustado.';
-      bLoad.textContent = '&#9632; Descargar';
+      bLoad.textContent = '&#0; OFF';
     },
     unload: function () {
       player.innerHTML = '';
       note.textContent = '';
-      bLoad.textContent = '&#9654; Cargar';
+      bLoad.textContent = '&#OFF; Cargar';
       paintPoster(c);
     },
     toggle: function () { if (c.isLoaded()) c.unload(); else c.load(); }
