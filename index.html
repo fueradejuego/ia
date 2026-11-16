@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FUERA DE JUEGO</title>
 <style>
-  /* ---------- Reproductor mínimo (solo iframe) ---------- */
+  /* ---------- Reproductor mÃ­nimo (solo iframe) ---------- */
   .vp-player{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;border-radius:10px;isolation:isolate}
   .vp-player > iframe.vp-iframe{position:absolute;inset:0;width:100%;height:100%;display:block;border:0;background:#000}
   .vp-placeholder{position:absolute;inset:0;display:block;padding:0;border:0;margin:0;cursor:pointer;background:#000;color:inherit}
@@ -17,7 +17,7 @@
   .vp-placeholder:focus-visible{outline:2px solid #fff;outline-offset:-4px}
   .vp-placeholder .vp-ph-title{position:absolute;left:0;right:0;bottom:0;padding:22px 12px 10px;text-align:left;color:#fff;font:600 14px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:linear-gradient(transparent,rgba(0,0,0,.82))}
 
-  /* ---------- Página ---------- */
+  /* ---------- PÃ¡gina ---------- */
   :root{ --bg:#0b0d12; --panel:#12161f; --panel2:#171c28; --line:#242c3a;
     --txt:#e8ecf3; --dim:#98a4b6; --accent:#e50914; --accent2:#3ea6ff; --warn:#f7b955; }
   *{box-sizing:border-box}
@@ -89,11 +89,11 @@
 </main>
 
 <script>
-/* Enlaces de zicotv extraídos del catálogo */
+/* Enlaces de zicotv extraÃ­dos del catÃ¡logo */
 var CHANNELS = [{"url":"https://bp.zicotv.cc/api/player/1","names":["PRUEBA ZOCOTV"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fi0.wp.com%2Ftrucosonline.com%2Fwp-content%2Fuploads%2F2022%2F11%2FDAZN_1_Logo.svg_.webp&sp=1791789753T26319632d602d83b839d27d8b5b49254bba479920fb55489eb730aa8faee01a6"}];
 
 /* ============================================================
- *  Reproductor mínimo — SOLO iframe
+ *  Reproductor mÃ­nimo â€” SOLO iframe
  * ============================================================ */
 function mountIframe(container, cfg) {
   container.innerHTML = '';
@@ -112,7 +112,7 @@ function mountIframe(container, cfg) {
 }
 
 /* ============================================================
- *  Construcción de la página
+ *  ConstrucciÃ³n de la pÃ¡gina
  * ============================================================ */
 function el(tag, cls, txt) {
   var n = document.createElement(tag);
@@ -132,7 +132,7 @@ function buildCard(ch) {
   var card = el('article', 'card');
 
   var holder = el('div', 'holder');
-  holder.appendChild(el('span', 'badge', 'zicotv · iframe'));
+  holder.appendChild(el('span', 'badge', 'zicotv Â· iframe'));
   holder.appendChild(el('span', 'id', 'ID ' + playerId(ch.url)));
 
   var player = el('div', 'vp-player');
@@ -140,7 +140,7 @@ function buildCard(ch) {
   card.appendChild(holder);
 
   var body = el('div', 'body');
-  var names = (ch.names && ch.names.length) ? ch.names.join(' · ') : 'Canal ' + playerId(ch.url);
+  var names = (ch.names && ch.names.length) ? ch.names.join(' Â· ') : 'Canal ' + playerId(ch.url);
   body.appendChild(el('div', 'nm', names));
   body.appendChild(el('div', 'url', ch.url));
 
@@ -149,9 +149,7 @@ function buildCard(ch) {
 
   var acts = el('div', 'acts');
 
-  var bLoad = el('button', 'btn primary', '&#9654; Cargar');
-  bLoad.type = 'button';
-  acts.appendChild(bLoad);
+  
 
   var a = el('a', 'btn', 'Abrir &#8599;');
   a.href = ch.url; a.target = '_blank'; a.rel = 'noopener';
@@ -182,7 +180,7 @@ function buildCard(ch) {
   return c;
 }
 
-/* --- póster "click to play" por tarjeta --- */
+/* --- pÃ³ster "click to play" por tarjeta --- */
 function paintPoster(c) {
   var ph = document.createElement('button');
   ph.type = 'button';
