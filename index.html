@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FUERA DE JUEGO</title>
+<style>
+  /* ---------- Reproductor mínimo (solo iframe) ---------- */
+  .vp-player{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;border-radius:10px;isolation:isolate}
+  .vp-player > iframe.vp-iframe{position:absolute;inset:0;width:100%;height:100%;display:block;border:0;background:#000}
+  .vp-placeholder{position:absolute;inset:0;display:block;padding:0;border:0;margin:0;cursor:pointer;background:#000;color:inherit}
+  .vp-placeholder img{width:100%;height:100%;object-fit:cover;opacity:.8;transition:opacity .2s ease}
+  .vp-placeholder:hover img{opacity:.95}
+  .vp-placeholder .vp-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:62px;height:62px;border:0;border-radius:50%;cursor:pointer;background:rgba(0,0,0,.62);backdrop-filter:blur(2px);display:grid;place-items:center;transition:transform .15s ease,background .15s ease}
+  .vp-placeholder .vp-play::after{content:"";display:block;margin-left:5px;border-style:solid;border-width:13px 0 13px 21px;border-color:transparent transparent transparent #fff}
+  .vp-placeholder:hover .vp-play,.vp-placeholder:focus-visible .vp-play{transform:translate(-50%,-50%) scale(1.08);background:rgba(229,9,20,.92)}
+  .vp-placeholder:focus-visible{outline:2px solid #fff;outline-offset:-4px}
+  .vp-placeholder .vp-ph-title{position:absolute;left:0;right:0;bottom:0;padding:22px 12px 10px;text-align:left;color:#fff;font:600 14px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:linear-gradient(transparent,rgba(0,0,0,.82))}
+
+  /* ---------- Página ---------- */
+  :root{ --bg:#0b0d12; --panel:#12161f; --panel2:#171c28; --line:#242c3a;
+    --txt:#e8ecf3; --dim:#98a4b6; --accent:#e50914; --accent2:#3ea6ff; --warn:#f7b955; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--txt);
+    font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  header.top{position:sticky;top:0;z-index:30;background:rgba(11,13,18,.92);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top-in{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    max-width:1500px;margin:0 auto;padding:12px 18px}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .brand .logo{width:46px;height:46px;border-radius:12px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(135deg,#e50914,#7a0510);font-weight:800;color:#fff;font-size:15px}
+  .brand .t h1{margin:0;font-size:19px;line-height:1.15}
+  .brand .t .sub{color:var(--dim);font-size:12.5px}
+  .spacer{flex:1}
+  .stats{display:flex;gap:8px;flex-wrap:wrap}
+  .stat{background:var(--panel2);border:1px solid var(--line);border-radius:999px;
+    padding:5px 11px;font-size:12.5px;color:var(--dim)}
+  .stat b{color:var(--txt)}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:10px;padding:8px 12px;font:600 13px/1 inherit;cursor:pointer}
+  .btn:hover{border-color:#3a4664;background:#1c2331}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:#ff1a26;border-color:#ff1a26}
+  .btn[disabled]{opacity:.55;cursor:default}
+
+  main{max-width:1500px;margin:0 auto;padding:18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    display:flex;flex-direction:column;transition:border-color .15s ease}
+  .card:hover{border-color:#33405a}
+  .card .holder{position:relative;background:#000}
+  .card .holder .badge{position:absolute;top:8px;left:8px;z-index:12;
+    background:rgba(247,185,85,.9);color:#231a05;border-radius:999px;
+    padding:3px 9px;font-size:11px;font-weight:700;letter-spacing:.3px}
+  .card .holder .id{position:absolute;top:8px;right:8px;z-index:12;
+    background:rgba(0,0,0,.66);border:1px solid rgba(255,255,255,.18);border-radius:999px;
+    padding:3px 9px;font-size:11px;font-weight:700;color:#fff}
+  .card .body{padding:11px 13px 13px;display:flex;flex-direction:column;gap:7px;flex:1}
+  .card .nm{font-weight:700;font-size:15px;line-height:1.25}
+  .card .url{font-size:11.5px;color:#6f7b8d;word-break:break-all}
+  .card .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+  .card .acts .btn{padding:6px 10px;font-size:12px;font-weight:600}
+  .card .note{color:var(--dim);font-size:11.5px;min-height:14px}
+
+  .foot{max-width:1500px;margin:0 auto;padding:26px 18px 60px;color:#5f6b7d;font-size:12.5px;text-align:center}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="logo">ztv</div>
+      <div class="t">
+        <h1>FUERA DE JUEGO</h1>
+        <div class="sub">Reproductor mínimo: solo iframe · enlaces <code>zicotv.cc/api/player</code></div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="stats" id="stats"></div>
+    <button class="btn primary" id="load-all" type="button">&#9654; Cargar todos</button>
+    <button class="btn" id="unload-all" type="button">&#9632; Descargar todos</button>
+  </div>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<div class="foot">
+  Cada tarjeta monta el enlace de zicotv en un <b>iframe</b> (es el único reproductor que necesitan estas URLs).
+  Si un canal no se ve, puede ser que el sitio bloquee el incrustado: usa «Abrir &#8599;».
+</div>
+
+<script>
+/* Enlaces de zicotv extraídos del catálogo */
+var CHANNELS = [{"url":"https://bp.zicotv.cc/api/player/1","names":["PRUEBA ZOCOTV"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fi0.wp.com%2Ftrucosonline.com%2Fwp-content%2Fuploads%2F2022%2F11%2FDAZN_1_Logo.svg_.webp&sp=1791789753T26319632d602d83b839d27d8b5b49254bba479920fb55489eb730aa8faee01a6"},{"url":"https://zicotv.cc/api/player/1","names":["Dazn La Liga"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fi0.wp.com%2Ftrucosonline.com%2Fwp-content%2Fuploads%2F2022%2F11%2FDAZN_1_Logo.svg_.webp&sp=1791789753T26319632d602d83b839d27d8b5b49254bba479920fb55489eb730aa8faee01a6"},{"url":"https://zicotv.cc/api/player/2","names":["Dazn 1"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fi0.wp.com%2Ftrucosonline.com%2Fwp-content%2Fuploads%2F2022%2F11%2FDAZN_1_Logo.svg_.webp&sp=1791789753T26319632d602d83b839d27d8b5b49254bba479920fb55489eb730aa8faee01a6"},{"url":"https://zicotv.cc/api/player/3","names":["Dazn 2"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fi0.wp.com%2Ftrucosonline.com%2Fwp-content%2Fuploads%2F2022%2F11%2FDAZN_1_Logo.svg_.webp&sp=1791789753T26319632d602d83b839d27d8b5b49254bba479920fb55489eb730aa8faee01a6"},{"url":"https://zicotv.cc/api/player/4","names":["M+ La liga"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fseeklogo.com%2Fimages%2FL%2Flaligatv-por-movistar-plus-logo-A008E105DE-seeklogo.com.png&sp=1791789648Tb6ae95b82544af73a833063a5cfa4e750a74752b7f6212081fc54305c870677c"},{"url":"https://zicotv.cc/api/player/5","names":["M+ Liga Campeones 3"],"groups":["TV"],"image":"https://i.ibb.co/Yhq2zjN/15713151141574.jpg"},{"url":"https://zicotv.cc/api/player/6","names":["M+ Liga Campeones 1"],"groups":["TV"],"image":"https://i.ibb.co/Yhq2zjN/15713151141574.jpg"},{"url":"https://zicotv.cc/api/player/7","names":["M+ Liga Campeones 4"],"groups":["TV"],"image":"https://i.ibb.co/Yhq2zjN/15713151141574.jpg"},{"url":"https://zicotv.cc/api/player/8","names":["M+ Liga Campeones 2"],"groups":["TV"],"image":"https://i.ibb.co/Yhq2zjN/15713151141574.jpg"},{"url":"https://zicotv.cc/api/player/9","names":["M+ Vamos","M+ Vamos&#127466;&#127480;"],"groups":["TV"],"image":"https://i.ibb.co/Yhq2zjN/15713151141574.jpg"},{"url":"https://zicotv.cc/api/player/14","names":["M+ Liga Campeones 5"],"groups":["TV"],"image":"https://i.ibb.co/Yhq2zjN/15713151141574.jpg"},{"url":"https://zicotv.cc/api/player/19","names":["M+ Deportes&#127466;&#127480;"],"groups":["TV"],"image":"https://images.seeklogo.com/logo-png/49/1/deportes-por-movistar-plus-logo-png_seeklogo-492841.png"},{"url":"https://zicotv.cc/api/player/22","names":["M+ La liga 2"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fseeklogo.com%2Fimages%2FL%2Flaligatv-por-movistar-plus-logo-A008E105DE-seeklogo.com.png&sp=1791789648Tb6ae95b82544af73a833063a5cfa4e750a74752b7f6212081fc54305c870677c"},{"url":"https://zicotv.cc/api/player/28","names":["M+"],"groups":["TV"],"image":"https://i.ibb.co/Yhq2zjN/15713151141574.jpg"},{"url":"https://zicotv.cc/api/player/35","names":["M+ Deportes 2&#127466;&#127480;"],"groups":["TV"],"image":"https://images.seeklogo.com/logo-png/49/1/deportes-por-movistar-plus-logo-png_seeklogo-492841.png"},{"url":"https://zicotv.cc/api/player/39","names":["M+ La liga 4"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fseeklogo.com%2Fimages%2FL%2Flaligatv-por-movistar-plus-logo-A008E105DE-seeklogo.com.png&sp=1791789648Tb6ae95b82544af73a833063a5cfa4e750a74752b7f6212081fc54305c870677c"},{"url":"https://zicotv.cc/api/player/41","names":["M+ La liga 3"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fseeklogo.com%2Fimages%2FL%2Flaligatv-por-movistar-plus-logo-A008E105DE-seeklogo.com.png&sp=1791789648Tb6ae95b82544af73a833063a5cfa4e750a74752b7f6212081fc54305c870677c"},{"url":"https://zicotv.cc/api/player/46","names":["M+ Liga Campeones 8"],"groups":["TV"],"image":"https://i.ibb.co/Yhq2zjN/15713151141574.jpg"},{"url":"https://zicotv.cc/api/player/47","names":["M+ Liga Campeones 7"],"groups":["TV"],"image":"https://i.ibb.co/Yhq2zjN/15713151141574.jpg"},{"url":"https://zicotv.cc/api/player/48","names":["M+ Liga Campeones 6"],"groups":["TV"],"image":"https://i.ibb.co/Yhq2zjN/15713151141574.jpg"},{"url":"https://bp.zicotv.cc/api/player/42816","names":["M+ Baloncesto"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fimages.seeklogo.com%2Flogo-png%2F43%2F1%2Fmovistar-plus-2022-logo-png_seeklogo-432602.png&sp=1790874643T40814379bfe5ff1f5161bc02635395b9e93e8d1250d1a2cb58e32e7bc8321098"},{"url":"https://bp.zicotv.cc/api/player/43195","names":["M+ Baloncesto 3"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fimages.seeklogo.com%2Flogo-png%2F43%2F1%2Fmovistar-plus-2022-logo-png_seeklogo-432602.png&sp=1790874643T40814379bfe5ff1f5161bc02635395b9e93e8d1250d1a2cb58e32e7bc8321098"},{"url":"https://bp.zicotv.cc/api/player/47001","names":["M+ Baloncesto 2"],"groups":["TV"],"image":"https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fimages.seeklogo.com%2Flogo-png%2F43%2F1%2Fmovistar-plus-2022-logo-png_seeklogo-432602.png&sp=1790874643T40814379bfe5ff1f5161bc02635395b9e93e8d1250d1a2cb58e32e7bc8321098"},{"url":"https://zicotv.cc/api/player/49026","names":["Sky Sports Football&#127468;&#127463;"],"groups":["TV"],"image":"https://images.seeklogo.com/logo-png/49/3/vamos-por-movistar-plus-logo-png_seeklogo-493709.png"},{"url":"https://zicotv.cc/api/player/49028","names":["Sky Sports Main Event&#127468;&#127463;"],"groups":["TV"],"image":"https://images.seeklogo.com/logo-png/49/3/vamos-por-movistar-plus-logo-png_seeklogo-493709.png"}];
+
+/* ============================================================
+ *  Reproductor mínimo — SOLO iframe
+ * ============================================================ */
+function mountIframe(container, cfg) {
+  container.innerHTML = '';
+  var f = document.createElement('iframe');
+  f.className = 'vp-iframe';
+  f.src = cfg.src;
+  f.title = cfg.title || 'zicotv';
+  f.setAttribute('frameborder', '0');
+  f.setAttribute('allowfullscreen', '');
+  f.setAttribute('scrolling', 'no');
+  f.setAttribute('referrerpolicy', cfg.referrerPolicy || 'no-referrer');
+  f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+  f.allowFullscreen = true;
+  container.appendChild(f);
+  return f;
+}
+
+/* ============================================================
+ *  Construcción de la página
+ * ============================================================ */
+function el(tag, cls, txt) {
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (txt !== undefined && txt !== null) n.textContent = txt;
+  return n;
+}
+
+function playerId(url) {
+  var m = String(url).match(/player\/(\d+)/);
+  return m ? m[1] : url;
+}
+
+var grid = document.getElementById('grid');
+
+function buildCard(ch) {
+  var card = el('article', 'card');
+
+  var holder = el('div', 'holder');
+  holder.appendChild(el('span', 'badge', 'zicotv · iframe'));
+  holder.appendChild(el('span', 'id', 'ID ' + playerId(ch.url)));
+
+  var player = el('div', 'vp-player');
+  holder.appendChild(player);
+  card.appendChild(holder);
+
+  var body = el('div', 'body');
+  var names = (ch.names && ch.names.length) ? ch.names.join(' · ') : 'Canal ' + playerId(ch.url);
+  body.appendChild(el('div', 'nm', names));
+  body.appendChild(el('div', 'url', ch.url));
+
+  var note = el('div', 'note', '');
+  body.appendChild(note);
+
+  var acts = el('div', 'acts');
+
+  var bLoad = el('button', 'btn primary', '&#9654; Cargar');
+  bLoad.type = 'button';
+  acts.appendChild(bLoad);
+
+  var a = el('a', 'btn', 'Abrir &#8599;');
+  a.href = ch.url; a.target = '_blank'; a.rel = 'noopener';
+  acts.appendChild(a);
+
+  body.appendChild(acts);
+  card.appendChild(body);
+
+  var c = {
+    card: card, player: player, button: bLoad, note: note, channel: ch, names: names,
+    isLoaded: function () { return !!player.querySelector('iframe'); },
+    load: function () {
+      if (c.isLoaded()) return;
+      mountIframe(player, { src: ch.url, title: names, referrerPolicy: 'no-referrer' });
+      note.textContent = 'Iframe montado. Si aparece en blanco, el sitio bloquea el incrustado.';
+      bLoad.textContent = '&#9632; Descargar';
+    },
+    unload: function () {
+      player.innerHTML = '';
+      note.textContent = '';
+      bLoad.textContent = '&#9654; Cargar';
+      paintPoster(c);
+    },
+    toggle: function () { if (c.isLoaded()) c.unload(); else c.load(); }
+  };
+
+  bLoad.addEventListener('click', c.toggle);
+  return c;
+}
+
+/* --- póster "click to play" por tarjeta --- */
+function paintPoster(c) {
+  var ph = document.createElement('button');
+  ph.type = 'button';
+  ph.className = 'vp-placeholder';
+  ph.setAttribute('aria-label', 'Cargar ' + (c.names || 'canal'));
+  if (c.channel.image) {
+    var img = document.createElement('img');
+    img.src = c.channel.image; img.alt = ''; img.loading = 'lazy';
+    img.onerror = function () { this.style.display = 'none'; };
+    ph.appendChild(img);
+  }
+  ph.appendChild(el('span', 'vp-play'));
+  ph.appendChild(el('span', 'vp-ph-title', c.names));
+  ph.addEventListener('click', function () { c.load(); });
+  c.player.innerHTML = '';
+  c.player.appendChild(ph);
+}
+
+var cards = CHANNELS.map(function (ch) {
+  var c = buildCard(ch);
+  grid.appendChild(c.card);
+  return c;
+});
+
+cards.forEach(paintPoster);
+
+/* --- stats --- */
+var st = document.getElementById('stats');
+st.innerHTML = '';
+var s1 = el('span', 'stat'); s1.innerHTML = '<b>' + CHANNELS.length + '</b> enlaces';
+var s2 = el('span', 'stat'); s2.innerHTML = 'motor: <b>iframe</b>';
+st.appendChild(s1); st.appendChild(s2);
+
+/* --- cargar / descargar todos --- */
+document.getElementById('load-all').addEventListener('click', function () {
+  cards.forEach(function (c) { c.load(); });
+});
+document.getElementById('unload-all').addEventListener('click', function () {
+  cards.forEach(function (c) { c.unload(); });
+});
+
+/* --- copiar URL al portapapeles con doble clic en la tarjeta --- */
+grid.addEventListener('dblclick', function (ev) {
+  var card = ev.target.closest('.card');
+  if (!card) return;
+  var idx = cards.findIndex(function (c) { return c.card === card; });
+  if (idx < 0) return;
+  var url = cards[idx].channel.url;
+  try { if (navigator.clipboard) navigator.clipboard.writeText(url); } catch (e) { /* noop */ }
+});
+</script>
+</body>
+</html>
