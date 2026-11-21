@@ -149,16 +149,7 @@ function buildCard(ch) {
 
   var acts = el('div', 'acts');
 
-  var bLoad = el('button', 'btn primary', '&#PULSAR AQUI');
-  bLoad.type = 'button';
-  acts.appendChild(bLoad);
 
-  var a = el('a', 'btn', '-----;');
-  a.href = ch.url; a.target = '_blank'; a.rel = 'noopener';
-  acts.appendChild(a);
-
-  body.appendChild(acts);
-  card.appendChild(body);
 
   var c = {
     card: card, player: player, button: bLoad, note: note, channel: ch, names: names,
